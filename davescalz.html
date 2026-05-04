@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dave.Scalz LLC — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#030408;--surface:#080a10;--card:#0d0f18;--card2:#111420;
+  --border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.11);
+  --accent:#00e5ff;--accent2:#ff6b35;--green:#00ff88;--amber:#ffb800;
+  --purple:#a855f7;--pink:#ff3d7f;
+  --text:#dde2f0;--muted:#4a5068;--muted2:#7a85a0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,229,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.018) 1px,transparent 1px);
+  background-size:50px 50px;pointer-events:none;z-index:0}
+
+/* ── NAV ── */
+nav{
+  z-index:200;display:flex;align-items:center;gap:1rem;
+  padding:0.75rem 1.5rem;
+  background:rgba(3,4,8,0.97);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);flex-shrink:0;
+}
+.logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:-0.5px;white-space:nowrap}
+.logo .dot{color:var(--accent)}.logo .llc{color:var(--muted2);font-size:0.65rem;font-weight:400;letter-spacing:0.08em;margin-left:4px}
+.nav-pills{display:flex;gap:0.35rem;flex:1;justify-content:center}
+.nav-pill{
+  padding:0.35rem 0.9rem;border-radius:5px;cursor:pointer;font-size:0.72rem;font-weight:500;
+  border:1px solid var(--border);background:transparent;color:var(--muted2);
+  font-family:'JetBrains Mono',monospace;transition:all 0.18s;
+}
+.nav-pill:hover{border-color:var(--border2);color:var(--text)}
+.nav-pill.active{background:rgba(0,229,255,0.08);border-color:var(--accent);color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:0.6rem;margin-left:auto}
+.stat-chip{font-size:0.68rem;padding:0.28rem 0.7rem;border:1px solid var(--border);border-radius:4px;color:var(--muted2);white-space:nowrap}
+.stat-chip strong{font-size:0.85rem}
+.stat-chip.cust strong{color:var(--accent)}
+.stat-chip.wh strong{color:var(--accent2)}
+.stat-chip.del strong{color:var(--green)}
+
+/* ── APP BODY ── */
+.app{display:flex;flex:1;overflow:hidden;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:320px;flex-shrink:0;display:flex;flex-direction:column;
+  border-right:1px solid var(--border);background:var(--surface);
+  overflow:hidden;
+}
+.sidebar-top{padding:1rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.search-wrap{position:relative;margin-bottom:0.6rem}
+.search-wrap input{
+  width:100%;background:var(--card);border:1px solid var(--border2);
+  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.8rem;
+  padding:0.5rem 0.8rem 0.5rem 2rem;border-radius:6px;outline:none;
+  transition:border-color 0.2s;
+}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.8rem;pointer-events:none}
+.filter-row{display:flex;gap:0.3rem;flex-wrap:wrap}
+.fchip{
+  padding:0.22rem 0.6rem;border-radius:20px;cursor:pointer;font-size:0.65rem;font-weight:500;
+  border:1px solid var(--border);background:transparent;color:var(--muted2);
+  font-family:'JetBrains Mono',monospace;transition:all 0.15s;
+}
+.fchip:hover{border-color:var(--border2);color:var(--text)}
+.fchip.active{background:rgba(0,229,255,0.08);border-color:var(--accent);color:var(--accent)}
+.fchip.wh.active{background:rgba(255,107,53,0.08);border-color:var(--accent2);color:var(--accent2)}
+.fchip.del.active{background:rgba(0,255,136,0.08);border-color:var(--green);color:var(--green)}
+
+.orders-scroll{flex:1;overflow-y:auto;padding:0.6rem}
+.order-item{
+  background:var(--card);border:1px solid var(--border);border-radius:7px;
+  padding:0.75rem 0.9rem;margin-bottom:0.5rem;cursor:pointer;
+  transition:border-color 0.18s,background 0.15s;position:relative;
+}
+.order-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:7px 0 0 7px;background:var(--accent);opacity:0;transition:opacity 0.2s}
+.order-item.wh::before{background:var(--accent2)}
+.order-item:hover{border-color:var(--border2);background:var(--card2)}
+.order-item.active{border-color:var(--accent);background:rgba(0,229,255,0.04)}
+.order-item.active::before{opacity:1}
+.order-item.wh.active{border-color:var(--accent2);background:rgba(255,107,53,0.04)}
+.oi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.35rem}
+.oi-tracking{font-size:0.82rem;font-weight:500;letter-spacing:0.02em}
+.oi-status{font-size:0.6rem;padding:2px 6px;border-radius:3px;white-space:nowrap;font-weight:500;letter-spacing:0.04em;text-transform:uppercase}
+.s-transit{background:rgba(0,229,255,0.1);color:var(--accent)}
+.s-delivered{background:rgba(0,255,136,0.1);color:var(--green)}
+.s-customs{background:rgba(255,184,0,0.1);color:var(--amber)}
+.s-pending{background:rgba(90,95,114,0.15);color:var(--muted2)}
+.s-delivery{background:rgba(168,85,247,0.12);color:var(--purple)}
+.s-warehouse{background:rgba(255,107,53,0.1);color:var(--accent2)}
+.oi-desc{font-size:0.72rem;color:var(--muted2);margin-bottom:0.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oi-meta{display:flex;justify-content:space-between;align-items:center;gap:0.5rem}
+.oi-carrier{font-size:0.65rem;color:var(--muted);background:rgba(255,255,255,0.04);padding:1px 5px;border-radius:3px}
+.oi-loc{font-size:0.65rem;color:var(--muted2)}
+.oi-prog{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-top:0.5rem;overflow:hidden}
+.prog-fill{height:100%;border-radius:1px;transition:width 0.4s}
+.prog-cust{background:linear-gradient(90deg,var(--accent),#00b8d4)}
+.prog-wh{background:linear-gradient(90deg,var(--accent2),#e05010)}
+.oi-del{position:absolute;right:0.5rem;top:0.5rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;padding:2px 4px;border-radius:3px;opacity:0;transition:all 0.15s}
+.order-item:hover .oi-del{opacity:1}
+.oi-del:hover{color:#ff4444}
+
+.empty-orders{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:0.75rem;line-height:2}
+
+/* ── MAIN CENTER ── */
+.main-center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ADD BAR */
+.add-bar{
+  padding:0.75rem 1.2rem;border-bottom:1px solid var(--border);
+  background:var(--surface);flex-shrink:0;
+  display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;
+}
+.ab-label{font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap}
+.ab-input{
+  background:var(--card);border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:0.8rem;
+  padding:0.45rem 0.75rem;border-radius:5px;outline:none;transition:border-color 0.2s;
+}
+.ab-input:focus{border-color:var(--accent)}
+#ti{flex:1;min-width:180px}
+#di{width:160px}
+.ab-sel{
+  background:var(--card);border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:0.78rem;
+  padding:0.45rem 0.6rem;border-radius:5px;outline:none;cursor:pointer;
+}
+.ab-sel option{background:#1a1d28}
+.add-main-btn{
+  padding:0.45rem 1.1rem;background:var(--accent);color:#000;border:none;border-radius:5px;
+  cursor:pointer;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;
+  letter-spacing:0.03em;transition:opacity 0.18s,transform 0.1s;white-space:nowrap;
+}
+.add-main-btn:hover{opacity:0.85}
+.add-main-btn:active{transform:scale(0.97)}
+.bulk-btn{
+  padding:0.45rem 0.85rem;background:transparent;color:var(--muted2);border:1px solid var(--border);
+  border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:0.75rem;
+  transition:all 0.18s;white-space:nowrap;
+}
+.bulk-btn:hover{border-color:var(--border2);color:var(--text)}
+
+/* CONTENT VIEWS */
+.view{flex:1;overflow-y:auto;padding:1.5rem;display:none}
+.view.active{display:block}
+
+/* DETAIL VIEW */
+#detail-view{display:flex;flex-direction:column;gap:1.2rem}
+#detail-view.active{display:flex}
+.dv-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem}
+.dv-tracking{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:-0.3px}
+.dv-badges{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.4rem}
+.dv-badge{font-size:0.68rem;padding:3px 8px;border-radius:4px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase}
+.dv-actions{display:flex;gap:0.5rem}
+.dv-btn{
+  padding:0.4rem 0.9rem;border-radius:5px;cursor:pointer;font-size:0.75rem;font-weight:500;
+  border:1px solid var(--border2);background:transparent;color:var(--muted2);
+  font-family:'JetBrains Mono',monospace;transition:all 0.18s;
+}
+.dv-btn:hover{border-color:var(--accent);color:var(--accent)}
+.dv-btn.danger:hover{border-color:#ff4444;color:#ff4444}
+.dv-btn.success{background:var(--green);color:#000;border-color:var(--green)}
+
+/* INFO GRID */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:0.8rem}
+.ic-label{font-size:0.62rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.3rem}
+.ic-val{font-size:0.9rem;font-weight:500;color:var(--text)}
+.ic-val.accent{color:var(--accent)}
+.ic-val.accent2{color:var(--accent2)}
+.ic-val.green{color:var(--green)}
+.ic-val.amber{color:var(--amber)}
+
+/* PROGRESS BAR LARGE */
+.prog-section{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.1rem}
+.prog-label{display:flex;justify-content:space-between;margin-bottom:0.6rem;font-size:0.78rem}
+.prog-bar-lg{height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+.prog-bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease}
+.prog-steps{display:flex;justify-content:space-between;margin-top:0.75rem}
+.ps-step{text-align:center;flex:1;position:relative}
+.ps-step::before{content:'';position:absolute;top:-8px;left:0;right:0;height:1px;background:var(--border)}
+.ps-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);margin:0 auto 4px;position:relative;z-index:1;transition:background 0.3s}
+.ps-dot.done{background:var(--accent)}
+.ps-dot.done.wh{background:var(--accent2)}
+.ps-txt{font-size:0.58rem;color:var(--muted);line-height:1.3}
+
+/* TIMELINE */
+.timeline-section{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.1rem}
+.ts-title{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.tl{display:flex;flex-direction:column;gap:0}
+.tl-row{display:flex;gap:0.8rem;align-items:flex-start;padding-bottom:0.9rem;position:relative}
+.tl-row:last-child{padding-bottom:0}
+.tl-line-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:16px}
+.tl-dot2{width:10px;height:10px;border-radius:50%;border:2px solid var(--muted);background:var(--bg);flex-shrink:0;transition:all 0.3s;margin-top:2px}
+.tl-dot2.done{border-color:var(--accent);background:var(--accent);box-shadow:0 0 6px rgba(0,229,255,0.4)}
+.tl-dot2.done.wh{border-color:var(--accent2);background:var(--accent2);box-shadow:0 0 6px rgba(255,107,53,0.4)}
+.tl-connector{width:1px;flex:1;background:var(--border);margin-top:2px}
+.tl-connector.done{background:rgba(0,229,255,0.3)}
+.tl-info{flex:1;padding-bottom:0.2rem}
+.tl-evt{font-size:0.8rem;font-weight:500}
+.tl-evt.dim{color:var(--muted2)}
+.tl-place{font-size:0.7rem;color:var(--muted2);margin-top:1px}
+.tl-time{font-size:0.65rem;color:var(--muted);margin-top:2px}
+
+/* NOTES */
+.notes-section{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.1rem}
+.notes-textarea{
+  width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.78rem;
+  padding:0.6rem;border-radius:5px;resize:vertical;min-height:80px;outline:none;
+  transition:border-color 0.2s;line-height:1.6;
+}
+.notes-textarea:focus{border-color:var(--accent)}
+.notes-save{
+  margin-top:0.5rem;padding:0.35rem 0.85rem;background:rgba(0,229,255,0.08);
+  border:1px solid var(--accent);color:var(--accent);border-radius:4px;cursor:pointer;
+  font-size:0.72rem;font-family:'JetBrains Mono',monospace;transition:all 0.18s;
+}
+.notes-save:hover{background:var(--accent);color:#000}
+
+/* EDIT OVERLAY */
+.edit-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.6rem}
+.edit-inp{
+  background:var(--card2);border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:0.78rem;
+  padding:0.4rem 0.65rem;border-radius:5px;outline:none;flex:1;min-width:120px;
+}
+.edit-inp:focus{border-color:var(--accent)}
+.edit-sel{
+  background:var(--card2);border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:0.75rem;
+  padding:0.4rem 0.5rem;border-radius:5px;outline:none;cursor:pointer;
+}
+.edit-sel option{background:#1a1d28}
+
+/* ANALYTICS VIEW */
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.ana-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.1rem;position:relative;overflow:hidden}
+.ana-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:0.04;background:var(--accent)}
+.ana-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;line-height:1}
+.ana-num.c{color:var(--accent)}.ana-num.w{color:var(--accent2)}.ana-num.g{color:var(--green)}.ana-num.a{color:var(--amber)}
+.ana-lbl{font-size:0.68rem;color:var(--muted2);margin-top:0.3rem;letter-spacing:0.05em}
+.ana-sub{font-size:0.65rem;color:var(--muted);margin-top:0.5rem}
+.carrier-breakdown{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.1rem;margin-bottom:1rem}
+.cb-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem}
+.cb-name{font-size:0.78rem;width:80px;color:var(--muted2);flex-shrink:0}
+.cb-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.cb-bar{height:100%;border-radius:3px;background:var(--accent);transition:width 0.5s ease}
+.cb-count{font-size:0.72rem;color:var(--muted);width:30px;text-align:right;flex-shrink:0}
+.status-breakdown{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.6rem}
+.sb-item{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0.65rem 0.85rem;display:flex;justify-content:space-between;align-items:center}
+.sb-label{font-size:0.7rem;color:var(--muted2)}
+.sb-count{font-size:0.9rem;font-weight:600}
+
+/* GLOBE VIEW */
+#globe-view{padding:0;overflow:hidden;display:none}
+#globe-view.active{display:flex;flex-direction:column}
+.globe-toolbar{
+  display:flex;align-items:center;gap:0.75rem;
+  padding:0.75rem 1.2rem;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.gt-label{font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase}
+.gt-legend{display:flex;gap:1rem;margin-left:auto}
+.gt-leg-item{display:flex;align-items:center;gap:0.35rem;font-size:0.68rem;color:var(--muted2)}
+.gt-dot{width:8px;height:8px;border-radius:50%}
+.globe-container{flex:1;position:relative}
+canvas#globeCanvas{width:100%;height:100%;display:block}
+.pkg-tooltip{
+  position:absolute;background:var(--card2);border:1px solid var(--border2);
+  border-radius:6px;padding:0.5rem 0.75rem;font-size:0.72rem;pointer-events:none;
+  display:none;z-index:10;min-width:160px;
+}
+.pkg-tooltip.show{display:block}
+
+/* BULK MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1.8rem;max-width:520px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h2{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:0.4rem}
+.modal p{font-size:0.75rem;color:var(--muted2);line-height:1.7;margin-bottom:1rem}
+.modal textarea{
+  width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:0.75rem;padding:0.7rem;border-radius:6px;
+  outline:none;resize:vertical;min-height:140px;line-height:1.6;
+}
+.modal textarea:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:0.5rem;margin-top:1rem;justify-content:flex-end}
+.m-btn{padding:0.45rem 1rem;border-radius:5px;cursor:pointer;font-size:0.78rem;font-family:'JetBrains Mono',monospace}
+.m-btn.secondary{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
+.m-btn.secondary:hover{border-color:var(--border2);color:var(--text)}
+.m-btn.primary{background:var(--accent);border:none;color:#000;font-weight:600}
+
+/* STATUS SELECTOR DROPDOWN */
+.status-sel{
+  background:var(--card2);border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:0.75rem;
+  padding:0.35rem 0.5rem;border-radius:4px;outline:none;cursor:pointer;
+}
+.status-sel option{background:#1a1d28}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card2);border:1px solid var(--border2);border-radius:8px;
+  padding:0.6rem 1.1rem;font-size:0.78rem;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:#ff4444;color:#ff4444}
+.toast.info{border-color:var(--accent);color:var(--accent)}
+
+/* EMPTY DETAIL */
+.empty-detail{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);text-align:center;gap:0.75rem}
+.empty-detail-icon{font-size:3rem;opacity:0.2}
+.empty-detail p{font-size:0.78rem;line-height:1.8}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .sidebar{width:260px}
+  .add-bar{gap:0.4rem}
+  #di{width:120px}
+}
+@media(max-width:600px){
+  .sidebar{position:absolute;z-index:50;height:100%;left:-260px;transition:left 0.3s;background:var(--surface)}
+  .sidebar.open{left:0}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Dave<span class="dot">.</span>Scalz<span class="llc">LLC</span></div>
+  <div class="nav-pills">
+    <button class="nav-pill active" onclick="setPage('orders',this)">📦 Orders</button>
+    <button class="nav-pill" onclick="setPage('globe',this)">🌍 Globe</button>
+    <button class="nav-pill" onclick="setPage('analytics',this)">📊 Analytics</button>
+    <button class="nav-pill" onclick="setPage('profits',this)">💰 Profits</button>
+    <button class="nav-pill" onclick="setPage('alerts',this)">🔔 Alerts <span id="alert-badge" style="display:none;background:var(--accent2);color:#fff;font-size:0.6rem;padding:1px 5px;border-radius:10px;margin-left:3px">0</span></button>
+  </div>
+  <div class="nav-right">
+    <div class="stat-chip cust">To Customer: <strong id="nc">0</strong></div>
+    <div class="stat-chip wh">To Warehouse: <strong id="nw">0</strong></div>
+    <div class="stat-chip del">Delivered: <strong id="nd">0</strong></div>
+    <button onclick="toggleSettings()" style="padding:0.3rem 0.75rem;background:rgba(0,229,255,0.08);border:1px solid var(--accent);border-radius:5px;color:var(--accent);cursor:pointer;font-size:0.72rem;font-family:JetBrains Mono,monospace;transition:all 0.18s" id="settings-btn">⚙ API Key</button>
+  </div>
+</nav>
+
+<!-- ORDERS PAGE -->
+<div class="app" id="page-orders" style="display:flex">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" placeholder="Search tracking, desc, location..." oninput="doSearch(this.value)" id="search-inp">
+      </div>
+      <div class="filter-row">
+        <button class="fchip active" onclick="setFilter('all',this)">All</button>
+        <button class="fchip" onclick="setFilter('customer',this)">→ Customer</button>
+        <button class="fchip wh" onclick="setFilter('warehouse',this)">→ Warehouse</button>
+        <button class="fchip del" onclick="setFilter('delivered',this)">Delivered</button>
+        <button class="fchip" onclick="setFilter('transit',this)">In Transit</button>
+        <button class="fchip" onclick="setFilter('customs',this)">Customs</button>
+      </div>
+    </div>
+    <div class="orders-scroll" id="orders-list"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-center">
+    <!-- ADD BAR -->
+    <div class="add-bar">
+      <span class="ab-label">+ Track</span>
+      <input class="ab-input" id="ti" type="text" placeholder="Tracking number..." maxlength="60" onkeydown="if(event.key==='Enter')addOrder()">
+      <select class="ab-sel" id="carrier-sel">
+        <option>UPS</option><option>FedEx</option><option>USPS</option>
+        <option>DHL</option><option>China Post</option><option>ePacket</option>
+        <option>4PX</option><option>Yanwen</option><option>SF Express</option>
+        <option>Cainiao</option><option>J&T Express</option><option>Other</option>
+      </select>
+      <select class="ab-sel" id="cat-sel">
+        <option value="customer">→ Customer</option>
+        <option value="warehouse">→ Warehouse</option>
+      </select>
+      <input class="ab-input" id="di" type="text" placeholder="Description..." maxlength="50">
+      <input class="ab-input" style="width:110px;flex:none" id="oi" type="text" placeholder="Order # (opt)">
+      <button class="add-main-btn" onclick="addOrder()">Add Shipment</button>
+      <button class="bulk-btn" onclick="openBulk()">Bulk Import</button>
+    </div>
+
+    <!-- DETAIL VIEW -->
+    <div class="view active" id="detail-view">
+      <div class="empty-detail" id="empty-detail">
+        <div class="empty-detail-icon">📡</div>
+        <p>Select a shipment from the sidebar<br>or add a new tracking number above</p>
+      </div>
+      <div id="detail-content" style="display:none;display:flex;flex-direction:column;gap:1.1rem"></div>
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <div class="view" id="analytics-view">
+      <div class="analytics-grid" id="ana-grid"></div>
+      <div class="section-label" style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">By Carrier</div>
+      <div class="carrier-breakdown" id="carrier-breakdown"></div>
+      <div class="section-label" style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">By Status</div>
+      <div class="status-breakdown" id="status-breakdown"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBE PAGE -->
+<div class="app" id="page-globe" style="display:none;flex-direction:column">
+  <div class="globe-toolbar">
+    <span class="gt-label">Live Package Locations</span>
+    <div style="font-size:0.7rem;color:var(--muted2)" id="globe-count">0 packages plotted</div>
+    <div class="gt-legend" style="margin-left:auto">
+      <div class="gt-leg-item"><div class="gt-dot" style="background:var(--accent)"></div>To Customer</div>
+      <div class="gt-leg-item"><div class="gt-dot" style="background:var(--accent2)"></div>To Warehouse</div>
+      <div class="gt-leg-item"><div class="gt-dot" style="background:var(--green)"></div>Delivered</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--green)">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite"></div>LIVE
+    </div>
+  </div>
+  <div class="globe-container">
+    <canvas id="globeCanvas"></canvas>
+    <div class="pkg-tooltip" id="pkg-tooltip"></div>
+  </div>
+</div>
+
+<!-- ANALYTICS PAGE -->
+<div class="app" id="page-analytics" style="display:none">
+  <div class="view active" id="ana-view-full" style="width:100%">
+    <div class="analytics-grid" id="ana-grid-full"></div>
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">By Carrier</div>
+    <div class="carrier-breakdown" id="carrier-bd-full"></div>
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;margin-top:1rem">By Status</div>
+    <div class="status-breakdown" id="status-bd-full"></div>
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;margin-top:1.5rem">All Shipments</div>
+    <table id="full-table" style="width:100%;border-collapse:collapse;font-size:0.75rem">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:500">Tracking</th>
+          <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:500">Carrier</th>
+          <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:500">Category</th>
+          <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:500">Status</th>
+          <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:500">Location</th>
+          <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:500">Progress</th>
+          <th style="text-align:left;padding:0.5rem 0.75rem;color:var(--muted);font-weight:500">Description</th>
+        </tr>
+      </thead>
+      <tbody id="full-tbody"></tbody>
+    </table>
+    <div style="margin-top:1.5rem;display:flex;gap:0.5rem">
+      <button onclick="exportCSV()" style="padding:0.45rem 1rem;background:var(--accent);color:#000;border:none;border-radius:5px;cursor:pointer;font-family:JetBrains Mono,monospace;font-size:0.78rem;font-weight:600">Export CSV</button>
+      <button onclick="clearAll()" style="padding:0.45rem 1rem;background:transparent;border:1px solid #ff4444;color:#ff4444;border-radius:5px;cursor:pointer;font-family:JetBrains Mono,monospace;font-size:0.78rem">Clear All Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFITS PAGE -->
+<div class="app" id="page-profits" style="display:none;flex-direction:column;overflow-y:auto">
+  <div style="padding:1.5rem;max-width:1200px;width:100%">
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Record New Sale</div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.5rem">
+      <input class="ab-input" id="p-product" placeholder="Product name" style="flex:2;min-width:160px">
+      <input class="ab-input" id="p-sku" placeholder="SKU / Part #" style="width:120px;flex:none">
+      <input class="ab-input" id="p-qty" type="number" min="1" placeholder="Qty" style="width:60px;flex:none" value="1">
+      <input class="ab-input" id="p-cost" type="number" step="0.01" placeholder="Source cost $" style="width:120px;flex:none">
+      <input class="ab-input" id="p-sale" type="number" step="0.01" placeholder="eBay sale price $" style="width:130px;flex:none">
+      <input class="ab-input" id="p-ebay" type="number" step="0.01" placeholder="eBay fee $" style="width:100px;flex:none">
+      <input class="ab-input" id="p-ship" type="number" step="0.01" placeholder="Shipping $" style="width:100px;flex:none">
+      <select class="ab-sel" id="p-platform">
+        <option>eBay</option><option>Amazon</option><option>Facebook</option><option>Shopify</option><option>Other</option>
+      </select>
+      <button class="add-main-btn" onclick="addProfit()">+ Record Sale</button>
+      <button class="bulk-btn" onclick="exportProfitsCSV()">Export CSV</button>
+    </div>
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">Summary</div>
+    <div class="analytics-grid" id="profit-summary" style="margin-bottom:1.5rem"></div>
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">Daily Profit Chart</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.5rem;height:160px">
+      <canvas id="profit-chart" style="width:100%;height:100%"></canvas>
+    </div>
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">Sales Log</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:0.75rem">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)">
+            <th style="text-align:left;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">Product</th>
+            <th style="text-align:left;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">SKU</th>
+            <th style="text-align:center;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">Qty</th>
+            <th style="text-align:left;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">Source $</th>
+            <th style="text-align:left;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">Sale $</th>
+            <th style="text-align:left;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">Fees</th>
+            <th style="text-align:left;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">Net Profit</th>
+            <th style="text-align:left;padding:0.6rem 0.6rem;color:var(--muted);font-weight:500;font-size:0.65rem;letter-spacing:0.05em;text-transform:uppercase">Margin</th>
+            <th style="padding:0.6rem 0.6rem"></th>
+          </tr>
+        </thead>
+        <tbody id="profit-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTS PAGE -->
+<div class="app" id="page-alerts" style="display:none;flex-direction:column;overflow-y:auto">
+  <div style="padding:1.5rem;max-width:800px;width:100%">
+    <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Create Alert</div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.5rem">
+      <input class="ab-input" id="alert-kw" placeholder="Tracking number, keyword, or product description..." style="flex:1;min-width:200px">
+      <select class="ab-sel" id="alert-type">
+        <option value="delivered">On Delivered</option>
+        <option value="out_for_delivery">On Out for Delivery</option>
+        <option value="customs">On Customs Clearance</option>
+        <option value="any_update">On Any Update</option>
+      </select>
+      <button class="add-main-btn" onclick="addAlert()">+ Set Alert</button>
+      <button class="bulk-btn" onclick="checkAlerts()">🔍 Check Now</button>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem">
+      <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">Your Alerts</div>
+      <div id="alerts-list"></div>
+    </div>
+    <div style="margin-top:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem">
+      <div style="font-family:Syne,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">Keyboard Shortcuts</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem">
+        ${[['1','Orders page'],['2','Globe page'],['3','Analytics page'],['4','Profits page'],['5','Alerts page'],['/','Focus search'],['N','New tracking input'],['Esc','Close modals']].map(([k,d])=>`
+        <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.72rem">
+          <kbd style="background:var(--card2);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-family:JetBrains Mono,monospace;font-size:0.68rem;color:var(--accent)">${k}</kbd>
+          <span style="color:var(--muted2)">${d}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>
+<div id="settings-panel" style="position:fixed;top:57px;right:0;width:360px;background:var(--card);border-left:1px solid var(--border2);border-bottom:1px solid var(--border2);z-index:300;padding:1.5rem;transform:translateX(100%);transition:transform 0.3s ease;border-radius:0 0 0 12px;box-shadow:-4px 4px 20px rgba(0,0,0,0.4)">
+  <div style="font-family:Syne,sans-serif;font-size:0.9rem;font-weight:700;margin-bottom:0.4rem">⚙ 17Track API Key</div>
+  <div style="font-size:0.72rem;color:var(--muted2);line-height:1.8;margin-bottom:1rem">
+    Get your free key at <a href="https://features.17track.net/en/api" target="_blank" style="color:var(--accent);text-decoration:none">features.17track.net/en/api</a><br>
+    Then: <strong style="color:var(--text)">Settings → Security → Access Key</strong><br>
+    Free plan includes 100 tracking quota for testing.
+  </div>
+  <div id="api-status" style="margin-bottom:0.75rem;font-size:0.72rem;padding:0.4rem 0.75rem;border-radius:5px;display:none"></div>
+  <input id="api-key-inp" type="password" placeholder="Paste your 17Track API key..." style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:JetBrains Mono,monospace;font-size:0.78rem;padding:0.55rem 0.75rem;border-radius:6px;outline:none;margin-bottom:0.75rem;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+    <button onclick="saveApiKey()" style="flex:1;min-width:120px;padding:0.5rem;background:var(--accent);color:#000;border:none;border-radius:5px;cursor:pointer;font-family:Syne,sans-serif;font-size:0.82rem;font-weight:700">Save & Activate</button>
+    <button onclick="refreshAllFromAPI()" style="padding:0.5rem 0.85rem;background:transparent;border:1px solid var(--border2);color:var(--muted2);border-radius:5px;cursor:pointer;font-size:0.75rem;font-family:JetBrains Mono,monospace;transition:all 0.18s" onmouseover="this.style.borderColor='var(--accent);this.style.color=var(--accent)'" >↻ Refresh All</button>
+    <button onclick="clearApiKey()" style="padding:0.5rem 0.75rem;background:transparent;border:1px solid rgba(255,68,68,0.35);color:#ff6666;border-radius:5px;cursor:pointer;font-size:0.75rem;font-family:JetBrains Mono,monospace">Clear</button>
+  </div>
+  <div style="margin-top:1rem;padding-top:0.85rem;border-top:1px solid var(--border);font-size:0.67rem;color:var(--muted);line-height:2">
+    <div style="color:var(--muted2);font-weight:500;margin-bottom:0.2rem">Carriers supported (3200+):</div>
+    UPS · FedEx · USPS · DHL · China Post · ePacket · 4PX · Yanwen · SF Express · Cainiao · J&T Express · and thousands more
+  </div>
+</div>
+<style>#settings-panel.open{transform:translateX(0)}</style>
+<div class="modal-bg" id="bulk-modal">
+  <div class="modal">
+    <h2>Bulk Import</h2>
+    <p>Paste one tracking number per line. Optionally add carrier, category, and description separated by commas.<br>
+    Example: <span style="color:var(--accent)">1Z999AA10123456784, UPS, customer, LED Headlights</span></p>
+    <textarea id="bulk-ta" placeholder="1Z999AA10123456784, UPS, customer, LED Headlights&#10;9400111899223397658, USPS, customer, Side Mirrors&#10;JD014600004210730435, DHL, warehouse, Tail Lights x50"></textarea>
+    <div class="modal-actions">
+      <button class="m-btn secondary" onclick="closeBulk()">Cancel</button>
+      <button class="m-btn primary" onclick="doBulkImport()">Import All</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<style>
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+</style>
+
+<script>
+// ── DATA ─────────────────────────────────────────────
+let orders = JSON.parse(localStorage.getItem('dsc_orders2') || '[]');
+let currentFilter = 'all';
+let currentSearch = '';
+let selectedId = null;
+let currentPage = 'orders';
+
+const LOCS = [
+  {city:'Shanghai',country:'CN',lat:31.2,lng:121.5},
+  {city:'Shenzhen',country:'CN',lat:22.5,lng:114.1},
+  {city:'Hong Kong',country:'CN',lat:22.3,lng:114.2},
+  {city:'Guangzhou',country:'CN',lat:23.1,lng:113.3},
+  {city:'Beijing',country:'CN',lat:39.9,lng:116.4},
+  {city:'Los Angeles',country:'US',lat:34.05,lng:-118.2},
+  {city:'New York',country:'US',lat:40.7,lng:-74.0},
+  {city:'Chicago',country:'US',lat:41.9,lng:-87.6},
+  {city:'Houston',country:'US',lat:29.8,lng:-95.4},
+  {city:'Memphis',country:'US',lat:35.1,lng:-90.0},
+  {city:'Louisville',country:'US',lat:38.2,lng:-85.7},
+  {city:'Anchorage',country:'US',lat:61.2,lng:-149.9},
+  {city:'London',country:'GB',lat:51.5,lng:-0.12},
+  {city:'Frankfurt',country:'DE',lat:50.1,lng:8.7},
+  {city:'Dubai',country:'AE',lat:25.2,lng:55.3},
+  {city:'Tokyo',country:'JP',lat:35.7,lng:139.7},
+  {city:'Sydney',country:'AU',lat:-33.9,lng:151.2},
+  {city:'Toronto',country:'CA',lat:43.7,lng:-79.4},
+  {city:'Singapore',country:'SG',lat:1.35,lng:103.8},
+];
+
+const STATUSES_CUST = ['In Transit','In Transit','In Transit','Out for Delivery','Customs Clearance','Pending Pickup','Delivered'];
+const STATUSES_WH = ['In Transit','In Transit','Customs Clearance','At Warehouse','Delivered'];
+const TIMELINE_CUST = ['Order Received','Picked Up by Carrier','Departed Origin','In Transit — Pacific','Arrived USA Gateway','Customs Cleared','In Transit — Domestic','Out for Delivery','Delivered'];
+const TIMELINE_WH = ['PO Placed','Packed at Factory','Departed Shenzhen Facility','In Transit — Air Freight','Arrived Gateway Hub','Customs Processing','Cleared Customs','In Transit to Warehouse','Received at Warehouse'];
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function randItem(a){return a[Math.floor(Math.random()*a.length)]}
+function randBetween(a,b){return a+Math.random()*(b-a)}
+function save(){localStorage.setItem('dsc_orders2',JSON.stringify(orders))}
+
+function detectCarrier(tn){
+  if(/^1Z/i.test(tn)) return 'UPS';
+  if(/^(94|92|93|94|95)\d{18}$/.test(tn.replace(/\s/g,''))) return 'USPS';
+  if(/^[0-9]{10,12}$/.test(tn)) return 'FedEx';
+  if(/^JD/.test(tn)) return 'DHL';
+  if(/^(LX|RX|EX)[A-Z0-9]+CN$/i.test(tn)) return 'ePacket';
+  if(/^(4PX|FX)/i.test(tn)) return '4PX';
+  if(/^SY|^YW/i.test(tn)) return 'Yanwen';
+  if(/^SF/i.test(tn)) return 'SF Express';
+  return null;
+}
+
+// ── 17TRACK API ENGINE ────────────────────────────────
+let API_KEY = localStorage.getItem('dsc_17token') || '';
+
+// Map 17Track status codes → human readable
+const STATUS_MAP = {
+  0:  {label:'Not Found',      cls:'s-pending',   progress:0},
+  10: {label:'In Transit',     cls:'s-transit',   progress:35},
+  20: {label:'Expired',        cls:'s-pending',   progress:10},
+  30: {label:'Pick Up',        cls:'s-transit',   progress:15},
+  35: {label:'Undeliverable',  cls:'s-pending',   progress:60},
+  40: {label:'Delivered',      cls:'s-delivered', progress:100},
+  50: {label:'Returned',       cls:'s-customs',   progress:80},
+  60: {label:'Cancelled',      cls:'s-pending',   progress:0},
+  // Sub-statuses
+  11: {label:'In Transit',     cls:'s-transit',   progress:30},
+  12: {label:'Customs Clearance', cls:'s-customs',progress:50},
+  13: {label:'Customs Released',  cls:'s-transit',progress:65},
+  14: {label:'Arrived at Hub',    cls:'s-transit',progress:45},
+  15: {label:'Departed Hub',      cls:'s-transit',progress:55},
+  16: {label:'Out for Delivery',  cls:'s-delivery',progress:90},
+  17: {label:'Delivery Attempt',  cls:'s-customs', progress:85},
+  18: {label:'Ready for Pickup',  cls:'s-delivery',progress:88},
+};
+
+function getStatusInfo(code){
+  return STATUS_MAP[code] || STATUS_MAP[10];
+}
+
+// Parse 17Track events into our timeline format
+function parseTimeline(events){
+  if(!events||!events.length) return [];
+  return events.map((e,i)=>({
+    label: e.z||e.d||'Update',
+    done: true,
+    current: i===0,
+    location: [e.l,e.c].filter(Boolean).join(', ') || 'Unknown',
+    time: e.a ? new Date(e.a).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '',
+  }));
+}
+
+// Geocode city name to lat/lng (approximate, from our known cities list)
+function geoFromName(name){
+  if(!name) return randItem(LOCS);
+  const lower = name.toLowerCase();
+  const match = LOCS.find(l=>lower.includes(l.city.toLowerCase())||lower.includes(l.country.toLowerCase()));
+  return match || LOCS.find(l=>lower.includes('china')||lower.includes('cn'))  || randItem(LOCS);
+}
+
+// Register a tracking number with 17Track API
+async function register17Track(trackingNum){
+  const resp = await fetch('https://api.17track.net/track/v2.2/register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','17token':API_KEY},
+    body: JSON.stringify([{number:trackingNum}])
+  });
+  if(!resp.ok) throw new Error('17Track register failed: '+resp.status);
+  return resp.json();
+}
+
+// Get tracking info from 17Track
+async function getTrackInfo(trackingNum){
+  const resp = await fetch('https://api.17track.net/track/v2.2/gettrackinfo',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','17token':API_KEY},
+    body: JSON.stringify([{number:trackingNum}])
+  });
+  if(!resp.ok) throw new Error('17Track gettrackinfo failed: '+resp.status);
+  return resp.json();
+}
+
+// Pull latest info for all orders from 17Track
+async function refreshAllFromAPI(){
+  if(!API_KEY){showToast('Add your 17Track API key in Settings ⚙️','err');return}
+  const nums = orders.filter(o=>!o.simulated).map(o=>({number:o.tracking}));
+  if(!nums.length){showToast('No real shipments to refresh','info');return}
+  showToast('Refreshing all shipments...','info');
+  try{
+    // Batch max 40 at a time
+    for(let i=0;i<nums.length;i+=40){
+      const batch=nums.slice(i,i+40);
+      const resp=await fetch('https://api.17track.net/track/v2.2/gettrackinfo',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','17token':API_KEY},
+        body:JSON.stringify(batch)
+      });
+      const data=await resp.json();
+      if(data.data&&data.data.accepted){
+        data.data.accepted.forEach(item=>{
+          const o=orders.find(x=>x.tracking===item.number);
+          if(o) applyTrackData(o,item);
+        });
+      }
+    }
+    save();renderSidebar();updateNavStats();
+    if(selectedId){const o=orders.find(x=>x.id===selectedId);if(o)renderDetail(o);}
+    showToast('All shipments refreshed ✓','ok');
+  }catch(err){
+    showToast('Refresh failed: '+err.message,'err');
+  }
+}
+
+// Apply 17Track API response data onto an order object
+function applyTrackData(o, item){
+  const track = item.track||item;
+  const statusCode = track.e||track.s||0;
+  const si = getStatusInfo(statusCode);
+  o.status = si.label;
+  o.progress = si.progress;
+  // Latest location
+  const events = track.z||track.tracking_info?.events||[];
+  if(events.length){
+    const latest=events[0];
+    const locStr=[latest.l,latest.c].filter(Boolean).join(', ');
+    const geo=geoFromName(locStr);
+    o.location={city:geo.city,country:geo.country,lat:geo.lat,lng:geo.lng};
+  }
+  o.timeline = parseTimeline(events);
+  o.carrier = track.c||track.carrier||o.carrier;
+  o.lastRefreshed = Date.now();
+}
+
+// Fake timeline for simulated orders (no API key)
+function makeTimeline(cat, progress){
+  const steps = cat==='customer' ? TIMELINE_CUST : TIMELINE_WH;
+  const activeCount = Math.ceil(progress/100*steps.length);
+  const now = Date.now();
+  return steps.map((s,i)=>({
+    label:s,
+    done:i<activeCount,
+    current:i===activeCount-1,
+    location: i===0?(cat==='warehouse'?'Shenzhen, CN':'Seller Location'):randItem(LOCS).city+', '+randItem(LOCS).country,
+    time: i<activeCount ? new Date(now-(steps.length-i)*86400000*randBetween(0.3,1.8)).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : null,
+  }));
+}
+
+async function addOrder(tracking, carrier, cat, desc, orderNum){
+  const raw = (tracking || document.getElementById('ti').value.trim()).toUpperCase();
+  if(!raw){showToast('Enter a tracking number','err');return}
+  if(orders.find(o=>o.tracking===raw)){showToast('Already tracking '+raw,'err');return}
+  const car = carrier || document.getElementById('carrier-sel').value;
+  const autoCarrier = detectCarrier(raw) || car;
+  const c = cat || document.getElementById('cat-sel').value;
+  const d = desc || document.getElementById('di').value.trim();
+  const on = orderNum || document.getElementById('oi').value.trim();
+
+  // Create placeholder order immediately so UI is responsive
+  const progress = 30;
+  const loc = randItem(LOCS);
+  const order = {
+    id:uid(), tracking:raw, carrier:autoCarrier, cat:c,
+    desc:d, orderNum:on, status:'Fetching...', location:loc,
+    progress, timeline:[], notes:'', added:Date.now(),
+    simulated: !API_KEY,
+    lastRefreshed: null,
+  };
+  orders.unshift(order);
+  save();
+  if(!tracking){
+    document.getElementById('ti').value='';
+    document.getElementById('di').value='';
+    document.getElementById('oi').value='';
+  }
+  renderSidebar();
+  updateNavStats();
+  selectOrder(order.id);
+
+  if(!API_KEY){
+    // No key — use simulated data
+    order.simulated=true;
+    const statuses = c==='customer'?STATUSES_CUST:STATUSES_WH;
+    const p2=Math.round(randBetween(10,90));
+    order.progress=p2;
+    order.status=statuses[Math.floor(p2/100*(statuses.length-1))];
+    order.location=randItem(LOCS);
+    order.timeline=makeTimeline(c,p2);
+    save();renderSidebar();renderDetail(order);
+    showToast('Added (simulated — enter API key for live data)','info');
+    return order;
+  }
+
+  // Has API key — hit 17Track
+  showToast('Registering with 17Track...','info');
+  try{
+    await register17Track(raw);
+    // Small delay for 17Track to process
+    await new Promise(r=>setTimeout(r,1500));
+    const data = await getTrackInfo(raw);
+    if(data.data&&data.data.accepted&&data.data.accepted.length){
+      applyTrackData(order, data.data.accepted[0]);
+      showToast('Live tracking loaded ✓','ok');
+    } else if(data.data&&data.data.errors&&data.data.errors.length){
+      order.status='Not Found';order.progress=0;
+      order.timeline=[];
+      showToast('Tracking number not found yet — will retry','info');
+    }
+  }catch(err){
+    order.status='API Error';
+    showToast('17Track error: '+err.message,'err');
+  }
+  save();renderSidebar();renderDetail(order);updateNavStats();
+  return order;
+}
+
+// Refresh a single order
+async function refreshOrder(id){
+  if(!API_KEY){showToast('Add your 17Track API key in Settings ⚙️','err');return}
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  showToast('Refreshing '+o.tracking+'...','info');
+  try{
+    await register17Track(o.tracking);
+    await new Promise(r=>setTimeout(r,1200));
+    const data=await getTrackInfo(o.tracking);
+    if(data.data&&data.data.accepted&&data.data.accepted.length){
+      applyTrackData(o,data.data.accepted[0]);
+      o.simulated=false;
+      save();renderSidebar();renderDetail(o);updateNavStats();
+      showToast('Updated ✓','ok');
+    } else {
+      showToast('No new data yet','info');
+    }
+  }catch(err){showToast('Error: '+err.message,'err')}
+}
+
+// Settings panel toggle
+function toggleSettings(){
+  const panel=document.getElementById('settings-panel');
+  panel.classList.toggle('open');
+  document.getElementById('api-key-inp').value=API_KEY;
+}
+function saveApiKey(){
+  API_KEY=document.getElementById('api-key-inp').value.trim();
+  localStorage.setItem('dsc_17token',API_KEY);
+  document.getElementById('settings-panel').classList.remove('open');
+  updateApiStatusUI();
+  showToast(API_KEY?'API key saved — live tracking enabled! ✓':'API key cleared','ok');
+  if(API_KEY) refreshAllFromAPI();
+}
+function clearApiKey(){
+  API_KEY='';localStorage.removeItem('dsc_17token');
+  document.getElementById('api-key-inp').value='';
+  updateApiStatusUI();
+  showToast('API key cleared','info');
+}
+
+// ── SIDEBAR ─────────────────────────────────────────
+function renderSidebar(){
+  const list = document.getElementById('orders-list');
+  let filtered = orders.filter(o=>{
+    if(currentFilter==='customer') return o.cat==='customer';
+    if(currentFilter==='warehouse') return o.cat==='warehouse';
+    if(currentFilter==='delivered') return o.status==='Delivered'||o.status==='Received at Warehouse';
+    if(currentFilter==='transit') return o.status==='In Transit';
+    if(currentFilter==='customs') return o.status==='Customs Clearance'||o.status==='At Warehouse';
+    return true;
+  });
+  if(currentSearch){
+    const q=currentSearch.toLowerCase();
+    filtered=filtered.filter(o=>
+      o.tracking.toLowerCase().includes(q)||
+      (o.desc||'').toLowerCase().includes(q)||
+      (o.location.city||'').toLowerCase().includes(q)||
+      (o.carrier||'').toLowerCase().includes(q)||
+      (o.orderNum||'').toLowerCase().includes(q)
+    );
+  }
+  if(filtered.length===0){
+    list.innerHTML=`<div class="empty-orders">📦<br>${orders.length===0?'No shipments yet.<br>Add a tracking number above.':'No results found.'}</div>`;
+    return;
+  }
+  list.innerHTML=filtered.map(o=>{
+    const isWH=o.cat==='warehouse';
+    const sc=statusClass(o.status);
+    return `<div class="order-item ${isWH?'wh':''} ${selectedId===o.id?'active':''}" id="oi-${o.id}" onclick="selectOrder('${o.id}')">
+      <button class="oi-del" onclick="removeOrder('${o.id}',event)">✕</button>
+      <div class="oi-top">
+        <div class="oi-tracking">${o.tracking}</div>
+        <div class="oi-status ${sc}">${o.status}</div>
+      </div>
+      <div class="oi-desc">${o.desc||o.orderNum||'No description'}</div>
+      <div class="oi-meta">
+        <span class="oi-carrier">${o.carrier}</span>
+        <span class="oi-loc">📍 ${o.location.city}</span>
+        <span style="font-size:0.65rem;color:var(--muted)">${o.progress}%</span>
+      </div>
+      <div class="oi-prog"><div class="prog-fill ${isWH?'prog-wh':'prog-cust'}" style="width:${o.progress}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function statusClass(s){
+  if(s==='In Transit'||s==='Out for Delivery') return 's-transit';
+  if(s==='Delivered'||s==='Received at Warehouse') return 's-delivered';
+  if(s==='Customs Clearance'||s==='At Warehouse') return 's-customs';
+  if(s==='Out for Delivery') return 's-delivery';
+  if(s==='Pending Pickup') return 's-pending';
+  return 's-pending';
+}
+
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  renderSidebar();
+}
+function doSearch(v){currentSearch=v;renderSidebar()}
+
+function removeOrder(id,e){
+  e.stopPropagation();
+  orders=orders.filter(o=>o.id!==id);
+  if(selectedId===id){selectedId=null;showEmptyDetail()}
+  save();renderSidebar();updateNavStats();
+  drawGlobe();showToast('Removed','info');
+}
+
+// ── DETAIL ─────────────────────────────────────────
+function selectOrder(id){
+  selectedId=id;
+  document.querySelectorAll('.order-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('oi-'+id);
+  if(el)el.classList.add('active');
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  renderDetail(o);
+}
+
+function showEmptyDetail(){
+  document.getElementById('empty-detail').style.display='flex';
+  document.getElementById('detail-content').style.display='none';
+}
+
+function renderDetail(o){
+  document.getElementById('empty-detail').style.display='none';
+  const dc=document.getElementById('detail-content');
+  dc.style.display='flex';
+  dc.style.flexDirection='column';
+  dc.style.gap='1.1rem';
+  const isWH=o.cat==='warehouse';
+  const col=isWH?'var(--accent2)':'var(--accent)';
+  const sc=statusClass(o.status);
+  const steps=isWH?['Ordered','In Transit','Customs','En Route','Warehouse']:['Ordered','Shipped','In Transit','Customs','Delivered'];
+  const stepPct=o.progress;
+  const stepIdx=Math.floor(stepPct/100*steps.length);
+
+  dc.innerHTML=`
+  <!-- HEADER -->
+  <div class="dv-header">
+    <div>
+      <div class="dv-tracking">${o.tracking}</div>
+      <div class="dv-badges">
+        <span class="dv-badge oi-status ${sc}">${o.status}</span>
+        <span class="dv-badge" style="background:rgba(255,255,255,0.05);color:var(--muted2)">${o.carrier}</span>
+        <span class="dv-badge" style="background:${isWH?'rgba(255,107,53,0.1)':'rgba(0,229,255,0.08)'};color:${col}">${isWH?'→ WAREHOUSE':'→ CUSTOMER'}</span>
+        ${o.orderNum?`<span class="dv-badge" style="background:rgba(255,255,255,0.04);color:var(--muted2)">Order #${o.orderNum}</span>`:''}
+      </div>
+    </div>
+    <div class="dv-actions">
+      <button class="dv-btn" onclick="refreshOrder('${o.id}')">↻ Refresh</button>
+      <button class="dv-btn" onclick="markDelivered('${o.id}')">✓ Mark Delivered</button>
+      <button class="dv-btn" onclick="toggleEdit('${o.id}')">✎ Edit</button>
+      <button class="dv-btn danger" onclick="removeOrder('${o.id}',event)">✕ Remove</button>
+    </div>
+  </div>
+
+  <!-- EDIT PANEL -->
+  <div id="edit-panel-${o.id}" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem">
+    <div style="font-family:Syne,sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">Edit Shipment</div>
+    <div class="edit-row">
+      <input class="edit-inp" id="edit-desc-${o.id}" value="${o.desc||''}" placeholder="Description">
+      <input class="edit-inp" id="edit-on-${o.id}" value="${o.orderNum||''}" placeholder="Order #" style="width:120px;flex:none">
+    </div>
+    <div class="edit-row">
+      <select class="edit-sel" id="edit-carrier-${o.id}">
+        ${['UPS','FedEx','USPS','DHL','China Post','ePacket','4PX','Yanwen','SF Express','Cainiao','J&T Express','Other'].map(c=>`<option ${o.carrier===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <select class="edit-sel" id="edit-cat-${o.id}">
+        <option value="customer" ${o.cat==='customer'?'selected':''}>→ Customer</option>
+        <option value="warehouse" ${o.cat==='warehouse'?'selected':''}>→ Warehouse</option>
+      </select>
+      <select class="status-sel" id="edit-status-${o.id}">
+        ${['In Transit','Out for Delivery','Customs Clearance','Pending Pickup','At Warehouse','Received at Warehouse','Delivered'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input class="edit-inp" id="edit-prog-${o.id}" type="number" min="0" max="100" value="${o.progress}" style="width:80px;flex:none" placeholder="Progress %">
+    </div>
+    <button onclick="saveEdit('${o.id}')" class="notes-save">Save Changes</button>
+  </div>
+
+  <!-- INFO GRID -->
+  <div class="info-grid">
+    <div class="info-card"><div class="ic-label">Current Location</div><div class="ic-val accent">📍 ${o.location.city}, ${o.location.country}</div></div>
+    <div class="info-card"><div class="ic-label">Category</div><div class="ic-val ${isWH?'accent2':'accent'}">${isWH?'→ Warehouse':'→ Customer'}</div></div>
+    <div class="info-card"><div class="ic-label">Carrier</div><div class="ic-val">${o.carrier}</div></div>
+    <div class="info-card"><div class="ic-label">Added</div><div class="ic-val" style="font-size:0.78rem">${new Date(o.added).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div></div>
+    <div class="info-card"><div class="ic-label">Progress</div><div class="ic-val ${isWH?'accent2':'accent'}">${o.progress}%</div></div>
+    <div class="info-card"><div class="ic-label">Est. Delivery</div><div class="ic-val amber">${getETA(o)}</div></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-section">
+    <div class="prog-label">
+      <span style="color:var(--muted2);font-size:0.72rem">Shipment Progress</span>
+      <span style="color:${col};font-weight:600">${o.progress}%</span>
+    </div>
+    <div class="prog-bar-lg">
+      <div class="prog-bar-fill" style="width:${o.progress}%;background:${isWH?'linear-gradient(90deg,var(--accent2),#e05010)':'linear-gradient(90deg,var(--accent),#00b8d4)'}"></div>
+    </div>
+    <div class="prog-steps">
+      ${steps.map((s,i)=>`
+        <div class="ps-step">
+          <div class="ps-dot ${i<=stepIdx?(isWH?'done wh':'done'):''}"></div>
+          <div class="ps-txt">${s}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline-section">
+    <div class="ts-title">Tracking Timeline</div>
+    <div class="tl">
+      ${o.timeline.map((t,i)=>`
+        <div class="tl-row">
+          <div class="tl-line-wrap">
+            <div class="tl-dot2 ${t.done?(isWH?'done wh':'done'):''}"></div>
+            ${i<o.timeline.length-1?`<div class="tl-connector ${t.done?'done':''}"></div>`:''}
+          </div>
+          <div class="tl-info">
+            <div class="tl-evt ${t.done?'':'dim'}">${t.label}${t.current?' <span style="color:'+col+';font-size:0.65rem">← CURRENT</span>':''}</div>
+            ${t.done?`<div class="tl-place">${t.location}</div><div class="tl-time">${t.time}</div>`:'<div class="tl-place" style="color:var(--muted)">Pending</div>'}
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="notes-section">
+    <div class="ts-title">Notes</div>
+    <textarea class="notes-textarea" id="notes-${o.id}" placeholder="Add notes about this shipment...">${o.notes||''}</textarea>
+    <button class="notes-save" onclick="saveNotes('${o.id}')">Save Notes</button>
+  </div>
+  `;
+}
+
+function getETA(o){
+  if(o.status==='Delivered'||o.status==='Received at Warehouse') return 'Delivered';
+  const days = Math.ceil((100-o.progress)/10);
+  const d = new Date(Date.now()+days*86400000);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function saveNotes(id){
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  o.notes=document.getElementById('notes-'+id).value;
+  save();showToast('Notes saved','ok');
+}
+
+function toggleEdit(id){
+  const panel=document.getElementById('edit-panel-'+id);
+  if(panel)panel.style.display=panel.style.display==='none'?'block':'none';
+}
+
+function saveEdit(id){
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  o.desc=document.getElementById('edit-desc-'+id).value;
+  o.orderNum=document.getElementById('edit-on-'+id).value;
+  o.carrier=document.getElementById('edit-carrier-'+id).value;
+  o.cat=document.getElementById('edit-cat-'+id).value;
+  o.status=document.getElementById('edit-status-'+id).value;
+  o.progress=parseInt(document.getElementById('edit-prog-'+id).value)||o.progress;
+  o.timeline=makeTimeline(o.cat,o.progress);
+  save();renderSidebar();renderDetail(o);updateNavStats();
+  showToast('Saved','ok');
+}
+
+function markDelivered(id){
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  o.status=o.cat==='warehouse'?'Received at Warehouse':'Delivered';
+  o.progress=100;
+  save();renderSidebar();renderDetail(o);updateNavStats();
+  showToast('Marked as delivered ✓','ok');
+}
+
+// ── PAGES ────────────────────────────────────────────
+function setPage(p,btn){
+  currentPage=p;
+  document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('page-orders').style.display=p==='orders'?'flex':'none';
+  document.getElementById('page-globe').style.display=p==='globe'?'flex':'none';
+  document.getElementById('page-analytics').style.display=p==='analytics'?'flex':'none';
+  document.getElementById('page-profits').style.display=p==='profits'?'flex':'none';
+  document.getElementById('page-alerts').style.display=p==='alerts'?'flex':'none';
+  if(p==='globe'){setTimeout(()=>{resizeGlobe();drawGlobe()},50)}
+  if(p==='analytics')renderAnalytics();
+  if(p==='profits'){renderProfits();}
+  if(p==='alerts'){renderAlerts();}
+}
+
+// ── NAV STATS ────────────────────────────────────────
+function updateNavStats(){
+  document.getElementById('nc').textContent=orders.filter(o=>o.cat==='customer'&&o.status!=='Delivered').length;
+  document.getElementById('nw').textContent=orders.filter(o=>o.cat==='warehouse'&&o.status!=='Received at Warehouse').length;
+  document.getElementById('nd').textContent=orders.filter(o=>o.status==='Delivered'||o.status==='Received at Warehouse').length;
+}
+
+// ── ANALYTICS ────────────────────────────────────────
+function renderAnalytics(){
+  const total=orders.length;
+  const cust=orders.filter(o=>o.cat==='customer').length;
+  const wh=orders.filter(o=>o.cat==='warehouse').length;
+  const del=orders.filter(o=>o.status==='Delivered'||o.status==='Received at Warehouse').length;
+  const transit=orders.filter(o=>o.status==='In Transit').length;
+  const customs=orders.filter(o=>o.status==='Customs Clearance').length;
+  const avgProg=total?Math.round(orders.reduce((s,o)=>s+o.progress,0)/total):0;
+
+  const ana=`
+    <div class="ana-card"><div class="ana-num c">${total}</div><div class="ana-lbl">Total Shipments</div></div>
+    <div class="ana-card"><div class="ana-num c">${cust}</div><div class="ana-lbl">To Customer</div><div class="ana-sub">${total?Math.round(cust/total*100):0}% of total</div></div>
+    <div class="ana-card"><div class="ana-num w">${wh}</div><div class="ana-lbl">To Warehouse</div><div class="ana-sub">${total?Math.round(wh/total*100):0}% of total</div></div>
+    <div class="ana-card"><div class="ana-num g">${del}</div><div class="ana-lbl">Delivered</div><div class="ana-sub">${total?Math.round(del/total*100):0}% success rate</div></div>
+    <div class="ana-card"><div class="ana-num a">${transit}</div><div class="ana-lbl">In Transit</div></div>
+    <div class="ana-card"><div class="ana-num" style="color:var(--amber)">${customs}</div><div class="ana-lbl">In Customs</div></div>
+    <div class="ana-card"><div class="ana-num" style="color:var(--purple)">${avgProg}%</div><div class="ana-lbl">Avg Progress</div></div>
+    <div class="ana-card"><div class="ana-num" style="color:var(--pink)">${orders.filter(o=>o.notes&&o.notes.trim()).length}</div><div class="ana-lbl">With Notes</div></div>
+  `;
+  document.getElementById('ana-grid-full').innerHTML=ana;
+
+  // Carrier breakdown
+  const carriers={};
+  orders.forEach(o=>{carriers[o.carrier]=(carriers[o.carrier]||0)+1});
+  const maxC=Math.max(...Object.values(carriers),1);
+  document.getElementById('carrier-bd-full').innerHTML=Object.entries(carriers).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
+    <div class="cb-row">
+      <div class="cb-name">${c}</div>
+      <div class="cb-bar-wrap"><div class="cb-bar" style="width:${n/maxC*100}%"></div></div>
+      <div class="cb-count">${n}</div>
+    </div>`).join('');
+
+  // Status breakdown
+  const statuses={};
+  orders.forEach(o=>{statuses[o.status]=(statuses[o.status]||0)+1});
+  document.getElementById('status-bd-full').innerHTML=Object.entries(statuses).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`
+    <div class="sb-item">
+      <div class="sb-label ${statusClass(s)}">${s}</div>
+      <div class="sb-count">${n}</div>
+    </div>`).join('');
+
+  // Full table
+  document.getElementById('full-tbody').innerHTML=orders.map(o=>`
+    <tr style="border-bottom:1px solid var(--border)" onclick="setPage('orders',document.querySelector('.nav-pill'));selectOrder('${o.id}')" style="cursor:pointer">
+      <td style="padding:0.5rem 0.75rem;font-weight:500">${o.tracking}</td>
+      <td style="padding:0.5rem 0.75rem;color:var(--muted2)">${o.carrier}</td>
+      <td style="padding:0.5rem 0.75rem"><span style="font-size:0.65rem;padding:2px 7px;border-radius:3px;background:${o.cat==='warehouse'?'rgba(255,107,53,0.1)':'rgba(0,229,255,0.08)'};color:${o.cat==='warehouse'?'var(--accent2)':'var(--accent)'}">${o.cat==='customer'?'Customer':'Warehouse'}</span></td>
+      <td style="padding:0.5rem 0.75rem"><span class="oi-status ${statusClass(o.status)}">${o.status}</span></td>
+      <td style="padding:0.5rem 0.75rem;color:var(--muted2)">${o.location.city}, ${o.location.country}</td>
+      <td style="padding:0.5rem 0.75rem">
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <div style="width:60px;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${o.progress}%;background:${o.cat==='warehouse'?'var(--accent2)':'var(--accent)'};border-radius:2px"></div>
+          </div>
+          <span style="font-size:0.68rem;color:var(--muted)">${o.progress}%</span>
+        </div>
+      </td>
+      <td style="padding:0.5rem 0.75rem;color:var(--muted2);font-size:0.72rem">${o.desc||'—'}</td>
+    </tr>`).join('');
+}
+
+// ── BULK IMPORT ──────────────────────────────────────
+function openBulk(){document.getElementById('bulk-modal').classList.add('open')}
+function closeBulk(){document.getElementById('bulk-modal').classList.remove('open')}
+function doBulkImport(){
+  const lines=document.getElementById('bulk-ta').value.split('\n').filter(l=>l.trim());
+  let added=0,skipped=0;
+  lines.forEach(line=>{
+    const parts=line.split(',').map(p=>p.trim());
+    const [tn,carrier,cat,desc]=parts;
+    if(!tn)return;
+    const c=cat&&['customer','warehouse'].includes(cat.toLowerCase())?cat.toLowerCase():'customer';
+    const r=addOrder(tn,carrier||'Other',c,desc||'','');
+    if(r)added++;else skipped++;
+  });
+  closeBulk();
+  renderSidebar();updateNavStats();
+  showToast(`Imported ${added} shipments${skipped?', '+skipped+' skipped':''}`,added>0?'ok':'err');
+}
+
+// ── EXPORT ────────────────────────────────────────────
+function exportCSV(){
+  if(!orders.length){showToast('No data to export','err');return}
+  const h=['Tracking','Carrier','Category','Status','Location','Country','Progress','Description','Order#','Notes','Added'];
+  const rows=orders.map(o=>[
+    o.tracking,o.carrier,o.cat,o.status,o.location.city,o.location.country,
+    o.progress+'%',o.desc||'',o.orderNum||'',o.notes||'',
+    new Date(o.added).toLocaleDateString()
+  ].map(v=>`"${v}"`).join(','));
+  const csv=[h.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='davescalz_orders.csv';a.click();
+  showToast('CSV exported','ok');
+}
+
+function clearAll(){
+  if(!orders.length)return;
+  if(confirm('Delete ALL shipments? This cannot be undone.')){
+    orders=[];selectedId=null;save();
+    renderSidebar();updateNavStats();showEmptyDetail();
+    showToast('All data cleared','info');
+  }
+}
+
+// ── GLOBE ────────────────────────────────────────────
+const gc=document.getElementById('globeCanvas');
+const gctx=gc.getContext('2d');
+let gW,gH,gR,gRot=0,gFrame=0,gDragging=false,gLastX=0,gSpeed=0.18;
+let hoveredPkg=null;
+
+function resizeGlobe(){
+  gW=gc.offsetWidth;gH=gc.offsetHeight;
+  gc.width=gW*devicePixelRatio;gc.height=gH*devicePixelRatio;
+  gctx.scale(devicePixelRatio,devicePixelRatio);
+  gR=Math.min(gW,gH)*0.4;
+}
+
+function ll2xy(lat,lng,rot){
+  const phi=(90-lat)*Math.PI/180;
+  const theta=(lng+rot)*Math.PI/180;
+  const x=gR*Math.sin(phi)*Math.cos(theta);
+  const y=gR*Math.cos(phi);
+  const z=gR*Math.sin(phi)*Math.sin(theta);
+  return {x:gW/2+x,y:gH/2-y,z,vis:z>-gR*0.2};
+}
+
+function drawGlobe(){
+  if(currentPage!=='globe')return;
+  gctx.clearRect(0,0,gW,gH);
+
+  // Ambient glow
+  const grad=gctx.createRadialGradient(gW/2,gH/2,gR*0.3,gW/2,gH/2,gR*1.4);
+  grad.addColorStop(0,'rgba(0,229,255,0.04)');grad.addColorStop(1,'transparent');
+  gctx.fillStyle=grad;gctx.fillRect(0,0,gW,gH);
+
+  // Globe shell
+  gctx.beginPath();gctx.arc(gW/2,gH/2,gR,0,Math.PI*2);
+  const shellGrad=gctx.createRadialGradient(gW/2-gR*0.2,gH/2-gR*0.2,gR*0.1,gW/2,gH/2,gR);
+  shellGrad.addColorStop(0,'rgba(0,229,255,0.06)');shellGrad.addColorStop(1,'rgba(0,229,255,0.01)');
+  gctx.fillStyle=shellGrad;gctx.fill();
+  gctx.strokeStyle='rgba(0,229,255,0.18)';gctx.lineWidth=1.5;gctx.stroke();
+
+  // Lat/Lng grid
+  for(let lat=-60;lat<=60;lat+=20){
+    gctx.beginPath();let first=true;
+    for(let lng=-180;lng<=180;lng+=3){
+      const p=ll2xy(lat,lng,gRot);
+      if(p.vis){first?gctx.moveTo(p.x,p.y):gctx.lineTo(p.x,p.y);first=false;}else first=true;
+    }
+    gctx.strokeStyle='rgba(0,229,255,0.07)';gctx.lineWidth=0.5;gctx.stroke();
+  }
+  for(let lng=-180;lng<=180;lng+=20){
+    gctx.beginPath();let first=true;
+    for(let lat=-85;lat<=85;lat+=3){
+      const p=ll2xy(lat,lng,gRot);
+      if(p.vis){first?gctx.moveTo(p.x,p.y):gctx.lineTo(p.x,p.y);first=false;}else first=true;
+    }
+    gctx.strokeStyle='rgba(0,229,255,0.07)';gctx.lineWidth=0.5;gctx.stroke();
+  }
+
+  // Equator highlight
+  gctx.beginPath();let fe=true;
+  for(let lng=-180;lng<=180;lng+=2){
+    const p=ll2xy(0,lng,gRot);
+    if(p.vis){fe?gctx.moveTo(p.x,p.y):gctx.lineTo(p.x,p.y);fe=false;}else fe=true;
+  }
+  gctx.strokeStyle='rgba(0,229,255,0.18)';gctx.lineWidth=1;gctx.stroke();
+
+  // Draw arcs between packages
+  for(let i=0;i<orders.length;i++){
+    for(let j=i+1;j<orders.length;j++){
+      const a=orders[i],b=orders[j];
+      const pa=ll2xy(a.location.lat,a.location.lng,gRot);
+      const pb=ll2xy(b.location.lat,b.location.lng,gRot);
+      if(!pa.vis||!pb.vis)continue;
+      const dist=Math.hypot(pa.x-pb.x,pa.y-pb.y);
+      if(dist>gR*1.5)continue;
+      const cx=(pa.x+pb.x)/2,cy=(pa.y+pb.y)/2-dist*0.25;
+      gctx.beginPath();gctx.moveTo(pa.x,pa.y);gctx.quadraticCurveTo(cx,cy,pb.x,pb.y);
+      gctx.strokeStyle='rgba(0,229,255,0.05)';gctx.lineWidth=0.7;gctx.stroke();
+    }
+  }
+
+  // Package dots
+  const pulse=(Math.sin(gFrame*0.06)*0.5+0.5);
+  document.getElementById('globe-count').textContent=orders.length+' packages plotted';
+  orders.forEach(o=>{
+    const p=ll2xy(o.location.lat,o.location.lng,gRot);
+    if(!p.vis)return;
+    const isDel=o.status==='Delivered'||o.status==='Received at Warehouse';
+    const isWH=o.cat==='warehouse';
+    const col=isDel?'0,255,136':isWH?'255,107,53':'0,229,255';
+    const r=hoveredPkg===o.id?7:5;
+    // Outer glow ring
+    gctx.beginPath();gctx.arc(p.x,p.y,r+3+pulse*4,0,Math.PI*2);
+    gctx.fillStyle=`rgba(${col},${0.08+pulse*0.08})`;gctx.fill();
+    // Dot
+    gctx.beginPath();gctx.arc(p.x,p.y,r,0,Math.PI*2);
+    gctx.fillStyle=`rgba(${col},0.95)`;gctx.fill();
+    gctx.strokeStyle=`rgba(255,255,255,0.3)`;gctx.lineWidth=1;gctx.stroke();
+    // City label
+    if(gR>120){
+      gctx.font=`${Math.max(9,gR*0.035)}px 'JetBrains Mono'`;
+      gctx.fillStyle=`rgba(${col},0.75)`;
+      gctx.fillText(o.location.city,p.x+r+4,p.y+4);
+    }
+  });
+}
+
+function globeLoop(){
+  gFrame++;
+  if(!gDragging){gRot+=gSpeed;if(gRot>360)gRot-=360;}
+  drawGlobe();
+  requestAnimationFrame(globeLoop);
+}
+
+// Globe interaction
+gc.addEventListener('mousedown',e=>{gDragging=true;gLastX=e.clientX;gSpeed=0});
+gc.addEventListener('mousemove',e=>{
+  if(gDragging){const dx=e.clientX-gLastX;gRot+=dx*0.3;gLastX=e.clientX;}
+  // Hover detection
+  const rect=gc.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  let found=null;
+  orders.forEach(o=>{
+    const p=ll2xy(o.location.lat,o.location.lng,gRot);
+    if(p.vis&&Math.hypot(p.x-mx,p.y-my)<12)found=o;
+  });
+  if(found){
+    hoveredPkg=found.id;
+    const tt=document.getElementById('pkg-tooltip');
+    const isWH=found.cat==='warehouse';
+    tt.innerHTML=`<div style="font-weight:600;margin-bottom:3px">${found.tracking}</div>
+      <div style="color:var(--muted2);margin-bottom:2px">${found.carrier} · ${found.status}</div>
+      <div style="color:${isWH?'var(--accent2)':'var(--accent)'};font-size:0.65rem">${isWH?'→ WAREHOUSE':'→ CUSTOMER'}</div>
+      ${found.desc?`<div style="color:var(--muted);font-size:0.65rem;margin-top:3px">${found.desc}</div>`:''}
+      <div style="color:var(--muted);font-size:0.65rem;margin-top:3px">📍 ${found.location.city}, ${found.location.country}</div>`;
+    tt.style.left=(e.clientX-rect.left+12)+'px';
+    tt.style.top=(e.clientY-rect.top-10)+'px';
+    tt.classList.add('show');
+  } else {
+    hoveredPkg=null;
+    document.getElementById('pkg-tooltip').classList.remove('show');
+  }
+});
+window.addEventListener('mouseup',()=>{
+  if(gDragging){gDragging=false;gSpeed=0.18}
+});
+gc.addEventListener('touchstart',e=>{gDragging=true;gLastX=e.touches[0].clientX;gSpeed=0},{passive:true});
+gc.addEventListener('touchmove',e=>{
+  if(gDragging){const dx=e.touches[0].clientX-gLastX;gRot+=dx*0.3;gLastX=e.touches[0].clientX;}
+},{passive:true});
+gc.addEventListener('touchend',()=>{gDragging=false;gSpeed=0.18});
+
+window.addEventListener('resize',()=>{if(currentPage==='globe'){resizeGlobe();drawGlobe()}});
+
+// ── TOAST ────────────────────────────────────────────
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type+' show';
+  setTimeout(()=>t.className='toast',2800);
+}
+
+// ── PROFITS PAGE ─────────────────────────────────────
+// Profits data stored separately
+let profitItems = JSON.parse(localStorage.getItem('dsc_profits') || '[]');
+let alertItems = JSON.parse(localStorage.getItem('dsc_alerts') || '[]');
+
+function saveProfit(){localStorage.setItem('dsc_profits',JSON.stringify(profitItems))}
+function saveAlerts(){localStorage.setItem('dsc_alerts',JSON.stringify(alertItems))}
+
+function renderProfits(){
+  const tbody = document.getElementById('profit-tbody');
+  const summary = document.getElementById('profit-summary');
+  if(!tbody) return;
+
+  let totalRevenue=0,totalCost=0,totalEbayFees=0,totalShipping=0;
+  profitItems.forEach(p=>{
+    totalRevenue += (parseFloat(p.salePrice)||0)*(parseInt(p.qty)||1);
+    totalCost += (parseFloat(p.sourceCost)||0)*(parseInt(p.qty)||1);
+    totalEbayFees += (parseFloat(p.ebayFee)||0);
+    totalShipping += (parseFloat(p.shippingCost)||0);
+  });
+  const totalProfit = totalRevenue - totalCost - totalEbayFees - totalShipping;
+  const margin = totalRevenue ? (totalProfit/totalRevenue*100).toFixed(1) : 0;
+
+  if(summary){
+    summary.innerHTML=`
+      <div class="ana-card"><div class="ana-num g">$${totalRevenue.toFixed(2)}</div><div class="ana-lbl">Total Revenue</div></div>
+      <div class="ana-card"><div class="ana-num" style="color:var(--accent2)">$${totalCost.toFixed(2)}</div><div class="ana-lbl">Total Source Cost</div></div>
+      <div class="ana-card"><div class="ana-num" style="color:var(--amber)">$${(totalEbayFees+totalShipping).toFixed(2)}</div><div class="ana-lbl">Fees + Shipping</div></div>
+      <div class="ana-card"><div class="ana-num ${totalProfit>=0?'g':''" style="${totalProfit<0?'color:#ff4444':''}">$${totalProfit.toFixed(2)}</div><div class="ana-lbl">Net Profit</div></div>
+      <div class="ana-card"><div class="ana-num" style="color:var(--purple)">${margin}%</div><div class="ana-lbl">Net Margin</div></div>
+      <div class="ana-card"><div class="ana-num c">${profitItems.length}</div><div class="ana-lbl">Total Sales</div></div>
+    `;
+  }
+
+  // Mini chart (canvas bar chart)
+  renderProfitChart(profitItems);
+
+  if(!profitItems.length){
+    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">No sales recorded yet. Add your first sale above.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=profitItems.map((p,i)=>{
+    const rev=(parseFloat(p.salePrice)||0)*(parseInt(p.qty)||1);
+    const cost=(parseFloat(p.sourceCost)||0)*(parseInt(p.qty)||1);
+    const fees=parseFloat(p.ebayFee)||0;
+    const ship=parseFloat(p.shippingCost)||0;
+    const profit=rev-cost-fees-ship;
+    const m=rev?(profit/rev*100).toFixed(1):0;
+    return `<tr style="border-bottom:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+      <td style="padding:0.5rem 0.6rem;font-size:0.75rem;font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.product||'—'}</td>
+      <td style="padding:0.5rem 0.6rem;font-size:0.72rem;color:var(--muted2)">${p.sku||'—'}</td>
+      <td style="padding:0.5rem 0.6rem;font-size:0.72rem;text-align:center">${p.qty||1}</td>
+      <td style="padding:0.5rem 0.6rem;font-size:0.72rem;color:var(--muted2)">$${parseFloat(p.sourceCost||0).toFixed(2)}</td>
+      <td style="padding:0.5rem 0.6rem;font-size:0.72rem;color:var(--green)">$${parseFloat(p.salePrice||0).toFixed(2)}</td>
+      <td style="padding:0.5rem 0.6rem;font-size:0.72rem;color:var(--amber)">$${(fees+ship).toFixed(2)}</td>
+      <td style="padding:0.5rem 0.6rem;font-size:0.75rem;font-weight:600;color:${profit>=0?'var(--green)':'#ff4444'}">$${profit.toFixed(2)}</td>
+      <td style="padding:0.5rem 0.6rem;font-size:0.72rem;color:${parseFloat(m)>=30?'var(--green)':parseFloat(m)>=15?'var(--amber)':'#ff4444'}">${m}%</td>
+      <td style="padding:0.5rem 0.6rem"><button onclick="removeProfit(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 5px;border-radius:3px" onmouseover="this.style.color='#ff4444'" onmouseout="this.style.color='var(--muted)'">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function addProfit(){
+  const product=document.getElementById('p-product').value.trim();
+  const sku=document.getElementById('p-sku').value.trim();
+  const qty=document.getElementById('p-qty').value||1;
+  const sourceCost=document.getElementById('p-cost').value;
+  const salePrice=document.getElementById('p-sale').value;
+  const ebayFee=document.getElementById('p-ebay').value||0;
+  const shippingCost=document.getElementById('p-ship').value||0;
+  const platform=document.getElementById('p-platform').value;
+  if(!product||!salePrice){showToast('Product name and sale price required','err');return}
+  profitItems.unshift({product,sku,qty:parseInt(qty),sourceCost:parseFloat(sourceCost)||0,salePrice:parseFloat(salePrice)||0,ebayFee:parseFloat(ebayFee)||0,shippingCost:parseFloat(shippingCost)||0,platform,date:Date.now()});
+  saveProfit();
+  ['p-product','p-sku','p-qty','p-cost','p-sale','p-ebay','p-ship'].forEach(id=>{document.getElementById(id).value=''});
+  renderProfits();
+  showToast('Sale recorded ✓','ok');
+}
+
+function removeProfit(i){
+  profitItems.splice(i,1);saveProfit();renderProfits();
+}
+
+function renderProfitChart(items){
+  const canvas=document.getElementById('profit-chart');
+  if(!canvas||!items.length)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth,H=canvas.offsetHeight;
+  canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+  // Group by day
+  const days={};
+  items.forEach(p=>{
+    const d=new Date(p.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const rev=(parseFloat(p.salePrice)||0)*(parseInt(p.qty)||1);
+    const cost=(parseFloat(p.sourceCost)||0)*(parseInt(p.qty)||1);
+    const profit=rev-cost-(parseFloat(p.ebayFee)||0)-(parseFloat(p.shippingCost)||0);
+    days[d]=(days[d]||0)+profit;
+  });
+  const labels=Object.keys(days).slice(-10);
+  const values=labels.map(l=>days[l]);
+  const maxV=Math.max(...values,1);
+  const barW=Math.min(40,(W-60)/labels.length-8);
+  const startX=40,botY=H-30,chartH=H-50;
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=botY-chartH*i/4;
+    ctx.beginPath();ctx.moveTo(startX,y);ctx.lineTo(W-10,y);ctx.stroke();
+    ctx.fillStyle='rgba(122,133,160,0.7)';ctx.font='9px JetBrains Mono';
+    ctx.fillText('$'+(maxV*i/4).toFixed(0),2,y+3);
+  }
+  labels.forEach((label,i)=>{
+    const x=startX+i*(W-startX-10)/labels.length+(W-startX-10)/labels.length/2-barW/2;
+    const barH=chartH*(values[i]/maxV);
+    const y=botY-barH;
+    // Bar
+    const grad=ctx.createLinearGradient(x,y,x,botY);
+    grad.addColorStop(0,values[i]>=0?'rgba(0,255,136,0.8)':'rgba(255,68,68,0.8)');
+    grad.addColorStop(1,values[i]>=0?'rgba(0,255,136,0.2)':'rgba(255,68,68,0.2)');
+    ctx.fillStyle=grad;
+    ctx.beginPath();ctx.roundRect(x,y,barW,barH,3);ctx.fill();
+    // Label
+    ctx.fillStyle='rgba(122,133,160,0.8)';ctx.font='8px JetBrains Mono';
+    ctx.save();ctx.translate(x+barW/2,botY+10);ctx.rotate(-0.5);ctx.fillText(label,0,0);ctx.restore();
+  });
+}
+
+function exportProfitsCSV(){
+  if(!profitItems.length){showToast('No profit data to export','err');return}
+  const h=['Product','SKU','Qty','Source Cost','Sale Price','eBay Fee','Shipping','Net Profit','Margin %','Platform','Date'];
+  const rows=profitItems.map(p=>{
+    const rev=(parseFloat(p.salePrice)||0)*(parseInt(p.qty)||1);
+    const cost=(parseFloat(p.sourceCost)||0)*(parseInt(p.qty)||1);
+    const profit=rev-cost-(parseFloat(p.ebayFee)||0)-(parseFloat(p.shippingCost)||0);
+    const m=rev?(profit/rev*100).toFixed(1):0;
+    return [p.product,p.sku,p.qty,p.sourceCost,p.salePrice,p.ebayFee,p.shippingCost,profit.toFixed(2),m+'%',p.platform,new Date(p.date).toLocaleDateString()].map(v=>`"${v}"`).join(',');
+  });
+  const csv=[h.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='davescalz_profits.csv';a.click();
+  showToast('Profits CSV exported','ok');
+}
+
+// ── ALERTS ────────────────────────────────────────────
+function addAlert(){
+  const keyword=document.getElementById('alert-kw').value.trim();
+  const type=document.getElementById('alert-type').value;
+  if(!keyword){showToast('Enter a keyword or tracking number','err');return}
+  alertItems.unshift({id:uid(),keyword,type,triggered:false,created:Date.now()});
+  saveAlerts();
+  document.getElementById('alert-kw').value='';
+  renderAlerts();
+  showToast('Alert created','ok');
+}
+
+function checkAlerts(){
+  let triggered=0;
+  alertItems.forEach(a=>{
+    if(a.triggered)return;
+    const match=orders.find(o=>
+      o.tracking.toLowerCase().includes(a.keyword.toLowerCase())||
+      (o.desc||'').toLowerCase().includes(a.keyword.toLowerCase())||
+      (o.status||'').toLowerCase().includes(a.keyword.toLowerCase())
+    );
+    if(match&&(
+      (a.type==='delivered'&&(match.status==='Delivered'||match.status==='Received at Warehouse'))||
+      (a.type==='customs'&&match.status==='Customs Clearance')||
+      (a.type==='out_for_delivery'&&match.status==='Out for Delivery')||
+      (a.type==='any_update')
+    )){
+      a.triggered=true;a.triggeredAt=Date.now();a.triggeredOrder=match.tracking;triggered++;
+    }
+  });
+  if(triggered){
+    saveAlerts();
+    const badge=document.getElementById('alert-badge');
+    const count=alertItems.filter(a=>a.triggered&&!a.seen).length;
+    if(count>0){badge.style.display='inline';badge.textContent=count;}
+    renderAlerts();
+    showToast(`🔔 ${triggered} alert${triggered>1?'s':''} triggered!`,'info');
+  }
+}
+
+function removeAlert(i){alertItems.splice(i,1);saveAlerts();renderAlerts();}
+function clearTriggered(){alertItems=alertItems.filter(a=>!a.triggered);saveAlerts();renderAlerts();}
+
+function renderAlerts(){
+  const container=document.getElementById('alerts-list');
+  if(!container)return;
+  const pending=alertItems.filter(a=>!a.triggered);
+  const done=alertItems.filter(a=>a.triggered);
+  const badge=document.getElementById('alert-badge');
+  const unseen=done.filter(a=>!a.seen).length;
+  badge.style.display=unseen>0?'inline':'none';
+  badge.textContent=unseen;
+  let html='';
+  if(pending.length){
+    html+=`<div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.6rem;margin-top:0.2rem">Watching (${pending.length})</div>`;
+    html+=pending.map((a,i)=>`
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:7px;padding:0.7rem 0.9rem;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:0.8rem;font-weight:500">${a.keyword}</div>
+          <div style="font-size:0.65rem;color:var(--muted2);margin-top:2px">Trigger: <span style="color:var(--accent)">${a.type.replace(/_/g,' ')}</span> · Set ${new Date(a.created).toLocaleDateString()}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 2s infinite"></div>
+          <button onclick="removeAlert(${alertItems.indexOf(a)})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 5px;border-radius:3px" onmouseover="this.style.color='#ff4444'" onmouseout="this.style.color='var(--muted)'">✕</button>
+        </div>
+      </div>`).join('');
+  }
+  if(done.length){
+    html+=`<div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.6rem;margin-top:0.8rem">Triggered (${done.length}) <button onclick="clearTriggered()" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.65rem;margin-left:8px;text-decoration:underline">Clear all</button></div>`;
+    html+=done.map((a,i)=>{
+      a.seen=true;
+      return `<div style="background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.15);border-radius:7px;padding:0.7rem 0.9rem;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:0.8rem;font-weight:500;color:var(--green)">✓ ${a.keyword}</div>
+          <div style="font-size:0.65rem;color:var(--muted2);margin-top:2px">Triggered on ${a.triggeredOrder||'order'} · ${new Date(a.triggeredAt||a.created).toLocaleString()}</div>
+        </div>
+        <button onclick="removeAlert(${alertItems.indexOf(a)})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 5px;border-radius:3px">✕</button>
+      </div>`;
+    }).join('');
+    saveAlerts();
+  }
+  if(!alertItems.length) html='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.78rem">No alerts set.<br>Add one above to get notified when a shipment status changes.</div>';
+  container.innerHTML=html;
+}
+
+// ── KEYBOARD SHORTCUTS ─────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  if(e.key==='1')setPage('orders',document.querySelectorAll('.nav-pill')[0]);
+  if(e.key==='2')setPage('globe',document.querySelectorAll('.nav-pill')[1]);
+  if(e.key==='3')setPage('analytics',document.querySelectorAll('.nav-pill')[2]);
+  if(e.key==='4')setPage('profits',document.querySelectorAll('.nav-pill')[3]);
+  if(e.key==='5')setPage('alerts',document.querySelectorAll('.nav-pill')[4]);
+  if(e.key==='/')setTimeout(()=>document.getElementById('search-inp').focus(),10);
+  if(e.key==='n')setTimeout(()=>document.getElementById('ti').focus(),10);
+  if(e.key==='Escape'){document.getElementById('bulk-modal').classList.remove('open');}
+});
+
+// ── SETPAGE EXTENDED ──────────────────────────────────
+
+// ── SEED DATA ────────────────────────────────────────
+if(orders.length===0){
+  const seed=[
+    {t:'1Z999AA10123456784',car:'UPS',cat:'customer',desc:'LED Headlights — Camry 2022',on:'ORD-001',s:'In Transit',loc:LOCS[5],p:68},
+    {t:'9400111899223397658',car:'USPS',cat:'customer',desc:'Side Mirrors — F150 2020',on:'ORD-002',s:'Out for Delivery',loc:LOCS[6],p:92},
+    {t:'JD014600004210730435',car:'DHL',cat:'warehouse',desc:'LED Tail Lights x50 units',on:'PO-001',s:'Customs Clearance',loc:LOCS[12],p:55},
+    {t:'4PXCN8800123456',car:'4PX',cat:'warehouse',desc:'Door Handles Bulk — 200 units',on:'PO-002',s:'In Transit',loc:LOCS[0],p:38},
+    {t:'LXCN123456789CN',car:'ePacket',cat:'customer',desc:'Fog Light Kit — RAV4',on:'ORD-003',s:'In Transit',loc:LOCS[3],p:45},
+    {t:'SF1234567890CN',car:'SF Express',cat:'warehouse',desc:'Grille Assembly x30',on:'PO-003',s:'In Transit',loc:LOCS[1],p:22},
+    {t:'1Z888BB20987654321',car:'UPS',cat:'customer',desc:'Leveling Kit — Silverado',on:'ORD-004',s:'Delivered',loc:LOCS[9],p:100},
+    {t:'92748999898880074900',car:'USPS',cat:'customer',desc:'RGB Interior Lights',on:'ORD-005',s:'In Transit',loc:LOCS[10],p:71},
+  ];
+  seed.forEach(d=>{
+    orders.push({id:uid(),tracking:d.t,carrier:d.car,cat:d.cat,desc:d.desc,orderNum:d.on,status:d.s,location:d.loc,progress:d.p,timeline:makeTimeline(d.cat,d.p),notes:'',added:Date.now()-Math.random()*10*86400000});
+  });
+  save();
+}
+
+// ── INIT ─────────────────────────────────────────────
+renderSidebar();
+updateNavStats();
+showEmptyDetail();
+resizeGlobe();
+globeLoop();
+renderProfits();
+renderAlerts();
+checkAlerts();
+
+// Show API key status in settings btn
+function updateApiStatusUI(){
+  const btn=document.getElementById('settings-btn');
+  const statusEl=document.getElementById('api-status');
+  if(API_KEY){
+    btn.textContent='⚙ Live ✓';
+    btn.style.background='rgba(0,255,136,0.08)';
+    btn.style.borderColor='var(--green)';
+    btn.style.color='var(--green)';
+    if(statusEl){statusEl.style.display='block';statusEl.style.background='rgba(0,255,136,0.08)';statusEl.style.border='1px solid rgba(0,255,136,0.2)';statusEl.style.color='var(--green)';statusEl.textContent='✓ API key active — live tracking enabled';}
+  } else {
+    btn.textContent='⚙ API Key';
+    btn.style.background='rgba(0,229,255,0.08)';
+    btn.style.borderColor='var(--accent)';
+    btn.style.color='var(--accent)';
+    if(statusEl){statusEl.style.display='block';statusEl.style.background='rgba(255,107,53,0.08)';statusEl.style.border='1px solid rgba(255,107,53,0.2)';statusEl.style.color='var(--accent2)';statusEl.textContent='⚠ No API key — tracking is simulated';}
+  }
+}
+updateApiStatusUI();
+// Seed demo profit data
+if(profitItems.length===0){
+  const demoSales=[
+    {product:'LED Headlights — Toyota Camry 2022',sku:'LH-CAM22',qty:3,sourceCost:38,salePrice:129.99,ebayFee:15.6,shippingCost:8,platform:'eBay',date:Date.now()-6*86400000},
+    {product:'Side Mirrors — Ford F150 2020',sku:'SM-F15020',qty:2,sourceCost:22,salePrice:79.99,ebayFee:9.6,shippingCost:6,platform:'eBay',date:Date.now()-5*86400000},
+    {product:'Leveling Kit — Silverado 1500',sku:'LK-SIL19',qty:5,sourceCost:21,salePrice:74.99,ebayFee:9,shippingCost:4,platform:'eBay',date:Date.now()-4*86400000},
+    {product:'LED Fog Light Kit — RAV4',sku:'FL-RAV19',qty:4,sourceCost:8,salePrice:39.99,ebayFee:4.8,shippingCost:5,platform:'eBay',date:Date.now()-3*86400000},
+    {product:'RGB Interior Lights Universal',sku:'RGB-INT',qty:10,sourceCost:6,salePrice:28.99,ebayFee:3.5,shippingCost:3,platform:'eBay',date:Date.now()-2*86400000},
+    {product:'Grille Assembly — RAM 1500 2021',sku:'GR-RAM21',qty:2,sourceCost:42,salePrice:145,ebayFee:17.4,shippingCost:12,platform:'eBay',date:Date.now()-86400000},
+  ];
+  profitItems.push(...demoSales);
+  saveProfit();
+  renderProfits();
+}
+// Auto-check alerts every 60s
+setInterval(checkAlerts, 60000);
+</script>
+</body>
+</html>
